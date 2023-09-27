@@ -29,8 +29,12 @@ enum TRACK_MODE{ NONE_TRACK, POS_TRACK, PLR_TRACK};
 #pragma pack(push, 1) 
 typedef struct
 {
-    float millimeters,                  // The nominal speed for this block in (mm/sec)^2
-          nominal_speed_sqr;
+    // Fields used by the motion planner to manage acceleration
+    float nominal_speed_sqr,                  // The nominal speed for this block in (mm/sec)^2
+          entry_speed_sqr,                    // Entry speed at previous-current junction in (mm/sec)^2
+          max_entry_speed_sqr,                // Maximum allowable junction entry speed in (mm/sec)^2
+          millimeters,                        // The total travel of this block in mm
+          acceleration;                       // acceleration mm/sec^2
     uint32_t la_advance_rate;               // The rate at which steps are added whilst accelerating
     uint16_t max_adv_steps,                 // Max advance steps to get cruising speed pressure
             final_adv_steps;               // Advance steps for exit speed pressure
@@ -141,8 +145,11 @@ void Motion_Track::block_info_record(const void* ptr) { // 800NS
     if(PLR_TRACK == m_track.mode && m_track.count < PLR_LEN-1){// Trigger and close block information record by G0_1 W<active>
       const block_t* currentbBlock = (const block_t*)ptr; // To convert a `void*` pointer to a `const block_t*` pointer
       planner_track_t* pbuff = &(m_track.l[m_track.head]);
-      pbuff->millimeters = currentbBlock->millimeters;
       pbuff->nominal_speed_sqr = currentbBlock->nominal_speed_sqr;
+      pbuff->entry_speed_sqr = currentbBlock->entry_speed_sqr;
+      pbuff->max_entry_speed_sqr = currentbBlock->max_entry_speed_sqr;
+      pbuff->millimeters = currentbBlock->millimeters;
+      pbuff->acceleration = currentbBlock->acceleration;
       pbuff->la_advance_rate = currentbBlock->la_advance_rate;
       pbuff->max_adv_steps = currentbBlock->max_adv_steps;
       pbuff->final_adv_steps = currentbBlock->final_adv_steps;
@@ -152,8 +159,8 @@ void Motion_Track::block_info_record(const void* ptr) { // 800NS
       pbuff->final_rate = currentbBlock->final_rate;
       pbuff->acceleration_steps_per_s2 = currentbBlock->acceleration_steps_per_s2;
       pbuff->accelerate_until = currentbBlock->accelerate_until;
-      pbuff->decelerate_after = currentbBlock->decelerate_after;
       pbuff->step_event_count = currentbBlock->step_event_count;
+      pbuff->decelerate_after = currentbBlock->decelerate_after;
       m_track.head = (m_track.head + 1) % PLR_LEN;
       m_track.ms_tick++;
       m_track.count++;

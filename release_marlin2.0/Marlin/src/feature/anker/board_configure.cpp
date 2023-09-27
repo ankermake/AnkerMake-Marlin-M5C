@@ -62,11 +62,11 @@ void Board_Configure:: init(void)
     
     if((board_configure.adc1>=0)&&(board_configure.adc1<=100))
 	{
-		strcpy(board_configure.board_version,MAIN_BOARD_V8110_V0_2); 
+		strcpy(board_configure.board_version,MAIN_BOARD_V8111_V0_2); 
 	}
 	else if((board_configure.adc1>1900)&&(board_configure.adc1<2200))
 	{
-		strcpy(board_configure.board_version,MAIN_BOARD_V8110_V0_3); 
+		strcpy(board_configure.board_version,MAIN_BOARD_V8111_V0_3); 
 	}
 
     if((board_configure.adc2>=0)&&(board_configure.adc2<=100))

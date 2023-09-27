@@ -36,7 +36,6 @@
 
 /*******************************Printer Profile Management****************************/
 // V8110
-#define MACCHINE_V8110_5X_ID          3000
 #define MOTOR_V8110_5X                3001
 #define MOTOR_V8110_5X_EVT            3006
 #define MOTOR_V8110_5X_DVT            3008
@@ -47,7 +46,7 @@
 /*******************************Functional API Configuration****************************/
 #if MACCHINE == MOTOR_V8110_5X_DVT
 #ifndef SHORT_BUILD_VERSION
-#define SHORT_BUILD_VERSION "V8110_V3.0.13"
+#define SHORT_BUILD_VERSION "V8110_V3.0.18"
 #endif
 #define ANKER_ROTATION        1 //
 #define ANKER_LOG_DEBUG       0 // Used to print logs for debugging
