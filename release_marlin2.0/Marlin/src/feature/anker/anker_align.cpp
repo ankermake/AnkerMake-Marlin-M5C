@@ -173,6 +173,7 @@
      anker_probe_set.delay=LEVEING_PROBE_DELAY;
      gcode.process_subcommands_now_P(PSTR("G2001\n"));
      anker_align.g36_running_flag = false;
+     TERN_(USE_Z_SENSORLESS, anker_homing.is_again_probe_homing = false);
      TERN_(Z_MULTI_ENDSTOPS, endstops.z2_endstop_adj = z2_endstop_adj);
 
      TERN_(ANKER_MAKE_API, anker_homing.after_align_action(targetTemperature));

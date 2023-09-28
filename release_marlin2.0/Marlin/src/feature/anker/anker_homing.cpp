@@ -241,9 +241,9 @@
 
         void Anker_Homing::after_align_action(celsius_t targetTemperature)
         {
-          char pcmd[96]="";
+          char pcmd[128]="";
           if(FILAMENT_TPU == anker_homing.filament_type && targetTemperature > 0 && true == anker_homing.is_clean){
-            sprintf(pcmd,"G1 X-10 Y200 F12000\nM109 S%d\n", targetTemperature);
+            sprintf(pcmd,"G1 X-10 Y200 F12000\nM109 S%d\nG92 E0\nG1 X-5 F600\nG1 Z0.2\nG1 Y150 E12\nG0 Y145\nG1 E11 F1800\nG92 E0\nG1 Z2\nG0 F12000\n", targetTemperature);
             MYSERIAL2.printLine("echo: Return to the set temperature(%d)\r\n",targetTemperature);
             gcode.process_subcommands_now_P(pcmd); // Restoring temperature after the process of wiping mouth
           }
