@@ -741,7 +741,11 @@ void Planner::init() {
 #endif
 
 #define MINIMAL_STEP_RATE 120
-
+constexpr float step_pre_mm_arr[] = DEFAULT_AXIS_STEPS_PER_UNIT;
+constexpr float X_MINIMAL_STEP_RATE = step_pre_mm_arr[X_AXIS] * (DEFAULT_XJERK > LA_V1_DEFAULT_XJERK ? LA_V1_DEFAULT_XJERK : DEFAULT_XJERK);
+constexpr float Y_MINIMAL_STEP_RATE = step_pre_mm_arr[Y_AXIS] * (DEFAULT_YJERK > LA_V1_DEFAULT_YJERK ? LA_V1_DEFAULT_YJERK : DEFAULT_YJERK);
+constexpr float Z_MINIMAL_STEP_RATE = step_pre_mm_arr[Z_AXIS] * (DEFAULT_ZJERK > LA_V1_DEFAULT_ZJERK ? LA_V1_DEFAULT_ZJERK : DEFAULT_ZJERK);
+constexpr float E_MINIMAL_STEP_RATE = step_pre_mm_arr[E_AXIS] * (DEFAULT_EJERK > LA_V1_DEFAULT_EJERK ? LA_V1_DEFAULT_EJERK : DEFAULT_EJERK);
 /**
  * Get the current block for processing
  * and mark the block as busy.
@@ -822,7 +826,10 @@ void Planner::calculate_trapezoid_for_block(block_t * const block, const_float_t
            final_rate = CEIL(block->nominal_rate * exit_factor); // (steps per second)
 
   // Limit minimal step rate (Otherwise the timer will overflow.)
-  NOLESS(initial_rate, uint32_t(MINIMAL_STEP_RATE));
+  if(false == block->use_advance_lead)
+    NOLESS(initial_rate, uint32_t(E_MINIMAL_STEP_RATE));
+  else
+    NOLESS(initial_rate, uint32_t(MINIMAL_STEP_RATE));
   NOLESS(final_rate, uint32_t(MINIMAL_STEP_RATE));
 
   #if EITHER(S_CURVE_ACCELERATION, LIN_ADVANCE)
@@ -2662,7 +2669,7 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
             float freq_xy_feedrate = (speed_factor * least_xy_segment_time) / xy_freq_min_interval_us;
             NOLESS(freq_xy_feedrate, xy_freq_min_speed_factor);
             NOMORE(speed_factor, freq_xy_feedrate);
-            MYSERIAL2.printLine("freq= %s %3.2f %3.2f\r\n", parser.command_ptr, corner.cos_theta[CUR_LINE], freq_xy_feedrate*xy_freq_limit_hz);
+            // MYSERIAL2.printLine("freq= %s %3.2f %3.2f\r\n", parser.command_ptr, corner.cos_theta[CUR_LINE], freq_xy_feedrate*xy_freq_limit_hz);
           }
         }
       }
@@ -3036,7 +3043,7 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
     }
 
     float vmax_junction;
-    if (moves_queued && !UNEAR_ZERO(previous_nominal_speed_sqr)) {
+    if (moves_queued > 1 && !UNEAR_ZERO(previous_nominal_speed_sqr)) {
       // Estimate a maximum velocity allowed at a joint of two successive segments.
       // If this maximum velocity allowed is lower than the minimum of the entry / exit safe velocities,
       // then the machine is not coasting anymore and the safe entry / exit velocities shall be used.

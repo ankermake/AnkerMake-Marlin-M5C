@@ -1996,7 +1996,7 @@ hal_timer_t Stepper::calc_timer_interval(uint32_t step_rate, uint8_t &loops) {
   #if ENABLED(DISABLE_MULTI_STEPPING)
 
     // Just make sure the step rate is doable
-    NOMORE(step_rate, uint32_t(MAX_STEP_ISR_FREQUENCY_1X));
+    NOMORE(step_rate, uint32_t(MAX_STEP_ISR_FREQUENCY_1X)); // 106870UL
   #else
 
     // The stepping frequency limits for each multistepping rate
@@ -2685,8 +2685,7 @@ uint32_t Stepper::block_phase_isr() {
       }//#endif
 
       // Calculate the initial timer interval
-      interval = calc_timer_interval(current_block->initial_rate << oversampling_factor, steps_per_isr);
-      acceleration_time += interval;
+      acceleration_time = interval = calc_timer_interval(current_block->initial_rate << oversampling_factor, steps_per_isr);
 
       TERN_(ANKER_MAKE_API, RCS.nominal_speed_sqr = current_block->nominal_speed_sqr);
 

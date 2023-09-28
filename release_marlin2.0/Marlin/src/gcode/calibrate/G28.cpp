@@ -286,7 +286,7 @@
             TERN_(USE_Z_SENSORLESS, anker_homing.is_again_probe_homing = true);
           }
           else{
-            WS1_do_z_clearance(0.16,true);
+            WS1_do_z_clearance(ANKER_Z_CLEAR, true);
           }
         #endif
       }
@@ -768,15 +768,7 @@ void GcodeSuite::G2001() {
      WS1_do_z_clearance(Z_AFTER_HOMING,true);
     #endif
     anker_homing.anker_z_homing_options=false;
-    #if 0
-    if((false == anker_align.g36_running_flag) && anker_homing.is_clean){ //  Not executed during leveling
-      if(get_e_is_absolute()){
-        gcode.process_subcommands_now_P(PSTR(ANKER_HOMING_SCRIPT_RESET_E0_ABS));
-      }else{
-        gcode.process_subcommands_now_P(PSTR(ANKER_HOMING_SCRIPT_RESET_E0_REL));
-      }
-    }
-    #endif
+
     sync_plan_position();
 
   endstops.not_homing();
