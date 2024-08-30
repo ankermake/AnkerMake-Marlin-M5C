@@ -638,3 +638,6 @@ void home_if_needed(const bool keeplev=false);
     extern Anker_TMC_SET anker_tmc_set;
   #endif
 
+
+extern uint32_t Stepper_enio_state();
+extern void Report_step_enin_state();

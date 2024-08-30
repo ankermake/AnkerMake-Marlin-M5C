@@ -35,7 +35,7 @@
 #define GCP_CMD_48_POINT_TYPE             0x48 // Notify the nozzle board of the position under different commands.
 #define GCP_CMD_49_PRODUCTION_MODE        0x49 // Switch between production test mode and normal mode.
 #define GCP_CMD_4A_OVERPRESSURE           0x4A // Detecting and checking parameters related to overpressure 
-
+#define GCP_CMD_4B_SET_FAN_SPEED          0x4B
 
 #define GCP_CMD_F0_LED_IO_CTRL            0xF0
 #define GCP_CMD_F1_TEMP_IO_CTRL           0xF1

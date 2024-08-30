@@ -56,9 +56,7 @@
   #define TEMP_TIMER_NUM        1  // Timer Index for Temperature
 #endif
 
-#if ENABLED(ANKER_MOTION_TRACKING)
-  #define MOTION_TRACK_TIMER_NUM 2  // Timer Index for motion debug
-#endif
+#define MOTION_TRACK_TIMER_NUM 2  // Timer Index for motion debug
 
 #define TEMP_TIMER_FREQUENCY 1000   // Temperature::isr() is expected to be called at around 1kHz
 

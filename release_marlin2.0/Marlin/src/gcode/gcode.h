@@ -1207,6 +1207,9 @@ private:
         static void M3032();
         xy_pos_t M3032_Get_move_away(uint8_t position);
         static void M3033();
+        #if ENABLED(ANKER_FILTER_LEVEL_GRID)
+        static void M3034();
+        #endif
       #endif
       #if ENABLED(ANKER_BELT_CHECK)
         static void M2100();        
@@ -1228,6 +1231,7 @@ private:
         static void M3013();
         static void M3014();
         static void M3015();
+        static void M3016();
         static void M3020();
       #endif
       #if ENABLED(ANKER_MAKE_API)

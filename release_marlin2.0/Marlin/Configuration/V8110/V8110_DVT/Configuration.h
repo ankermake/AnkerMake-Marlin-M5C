@@ -995,6 +995,8 @@
 
 #define DEFAULT_EJERK    2.5//3.0  // May be used by Linear Advance
 
+#define DEFAULT_INIT_RATE { 5.0, 5.0, 0.25, DEFAULT_EJERK }
+
 
 #define LA_V1_DEFAULT_MAX_FEEDRATE          { 600, 600, 50, 120 }
 #define LA_V1_MAX_FEEDRATE_EDIT_VALUES      { 600, 600, 100, 120 }

@@ -171,6 +171,10 @@ public:
   constexpr int G29_State::abl_points;
 #endif
 
+#if ENABLED(ANKER_FILTER_LEVEL_GRID)
+extern void filter_leveling_grid(bed_mesh_t &din, const uint8_t outter_size, const uint8_t inner_size, bool debug_flag);
+#endif
+
 /**
  * G29: Detailed Z probe, probes the bed at 3 or more points.
  *      Will fail if the printer has not been homed with G28.
@@ -819,6 +823,12 @@ G29_TYPE GcodeSuite::G29() {
       if (!abl.dryrun) extrapolate_unprobed_bed_level();
       print_bilinear_leveling_grid();
 
+      #if ENABLED(ANKER_FILTER_LEVEL_GRID)
+        filter_leveling_grid(z_values, GRID_MAX_POINTS_X, GRID_MAX_POINTS_Y, ENABLE);
+        SERIAL_ECHOLNPGM(">>>>>>>>>>>>>>> after filter level:");
+        print_bilinear_leveling_grid();
+      #endif
+      
       refresh_bed_level();
 
       TERN_(ABL_BILINEAR_SUBDIVISION, print_bilinear_leveling_grid_virt());

@@ -185,14 +185,14 @@ void reset_bed_level() {
       #ifdef SCAD_MESH_OUTPUT
         SERIAL_ECHOPGM(" [");             // open sub-array
       #else
-        if (y < 10) SERIAL_CHAR(' ');
+        if (y < 10) SERIAL_ECHOPGM(" BL-Grid-");
         SERIAL_ECHO(y);
       #endif
       LOOP_L_N(x, sx) {
         SERIAL_CHAR(' ');
         const float offset = fn(x, y);
         if (!isnan(offset)) {
-          if (offset >= 0) SERIAL_CHAR('+');
+          //if (offset >= 0) SERIAL_CHAR('+');
           SERIAL_ECHO_F(offset, int(precision));
         }
         else {

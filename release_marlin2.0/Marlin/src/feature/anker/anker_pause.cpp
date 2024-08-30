@@ -234,7 +234,12 @@ static void anker_pause_deal(void)
         // planner.clear_block_buffer();
         p_info->pause_block_state = ANKER_PAUSE_BLOCK_DISABLE;
         p_info->pause_queue_state = ANKER_PAUSE_QUEUE_DISABLE;
-        queue.ring_buffer.enqueue("G1 X-10 Y200 F12000\r\n");
+        const float save_travel_accel = planner.settings.travel_acceleration;
+        const float save_accel = planner.settings.acceleration;
+        queue.ring_buffer.enqueue("M204 S500\r\n");// 500mm/s2
+        queue.ring_buffer.enqueue("G1 X-10 Y200 F9000\r\n");
+        snprintf(p_info->tmp_cmd_buf, sizeof(p_info->tmp_cmd_buf), "M204 P%3.0f T%3.0f\r\n", save_accel, save_travel_accel);
+        queue.ring_buffer.enqueue(p_info->tmp_cmd_buf);
         // MYSERIAL1.printf("go zero\r\n");
         p_info->pause_serial_state = ANKER_PAUSE_SERIAL_DISABLE;
 
@@ -248,6 +253,9 @@ static void anker_pause_deal(void)
         {
             p_info->pause_state = ANKER_PAUSE_CONTINUE;
             p_info->pause_serial_state = ANKER_PAUSE_SERIAL_ENABLE;
+            const float save_travel_accel = planner.settings.travel_acceleration;
+            const float save_accel = planner.settings.acceleration;
+            queue.ring_buffer.enqueue("M204 S500\r\n");// 500mm/s2
 
             memset(p_info->tmp_cmd_buf, 0, sizeof(p_info->tmp_cmd_buf));
             #if ENABLED(ANKER_PAUSE_RESET)
@@ -260,17 +268,18 @@ static void anker_pause_deal(void)
             snprintf(p_info->tmp_cmd_buf, sizeof(p_info->tmp_cmd_buf), "G1 E%f F500\r\n", p_info->save_block_buf.cur_pos.e);
             queue.ring_buffer.enqueue(p_info->tmp_cmd_buf);
             #endif
-            snprintf(p_info->tmp_cmd_buf, sizeof(p_info->tmp_cmd_buf), "G1 X%f Y%f F12000\r\n", p_info->save_block_buf.cur_pos.x,
+            snprintf(p_info->tmp_cmd_buf, sizeof(p_info->tmp_cmd_buf), "G1 X%f Y%f F9000\r\n", p_info->save_block_buf.cur_pos.x,
                     p_info->save_block_buf.cur_pos.y);
             queue.ring_buffer.enqueue(p_info->tmp_cmd_buf);
 
             snprintf(p_info->tmp_cmd_buf, sizeof(p_info->tmp_cmd_buf), "G1 Z%f F1800\r\n", p_info->save_block_buf.cur_pos.z);
             queue.ring_buffer.enqueue(p_info->tmp_cmd_buf);
 
-            // MYSERIAL1.printf("<==> CONTINUE %s",p_info->tmp_cmd_buf);
             snprintf(p_info->tmp_cmd_buf, sizeof(p_info->tmp_cmd_buf), "G1 F%f\r\n", p_info->save_block_buf.cur_fr_mm_s);
             queue.ring_buffer.enqueue(p_info->tmp_cmd_buf);
 
+            snprintf(p_info->tmp_cmd_buf, sizeof(p_info->tmp_cmd_buf), "M204 P%3.0f T%3.0f\r\n", save_accel, save_travel_accel);
+            queue.ring_buffer.enqueue(p_info->tmp_cmd_buf);
             p_info->pause_deal_step = ANKER_PAUSE_DEAL_STEP_RECOVER_PRE;
         }
         break;

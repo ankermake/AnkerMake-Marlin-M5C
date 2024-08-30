@@ -301,6 +301,9 @@ typedef struct block_t {
     xyze_pos_t target_layer_start_pos;
     //end add by jason.wu for detect layer change to notify remote controller capture
   #endif
+  #if ENABLED(ANKER_STARTUP_SPEED_ERR)
+    AxisEnum axis_maximum_count;
+  #endif
 } block_t;
 
 #if ANY(LIN_ADVANCE, SCARA_FEEDRATE_SCALING, GRADIENT_MIX, LCD_SHOW_E_TOTAL)

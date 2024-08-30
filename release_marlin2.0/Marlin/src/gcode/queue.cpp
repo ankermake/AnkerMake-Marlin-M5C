@@ -419,8 +419,12 @@ static bool ak_gcode_parse(char *command)
   //Customize high-priority commands
   if (*command == '^') {
     *command = 'M';
+
+    char * const saved_cmd = parser.command_ptr;        // Save the parser state
     parser.parse(command);
     gcode.process_parsed_command(true);
+    parser.parse(saved_cmd);                            // Restore the parser state
+
     SERIAL_ECHOLN(STR_OK);
     queue.ring_buffer.report_buf_free_size();
     return true;    
@@ -478,8 +482,11 @@ static bool ak_gcode_parse(char *command)
 
   if (has_high_priority)
   {
+    char * const saved_cmd = parser.command_ptr;        // Save the parser state
     parser.parse(command);
     gcode.process_parsed_command(true);
+    parser.parse(saved_cmd);                            // Restore the parser state
+
     SERIAL_ECHOLN(STR_OK);
     queue.ring_buffer.report_buf_free_size();
 

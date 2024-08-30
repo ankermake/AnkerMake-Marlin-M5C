@@ -742,10 +742,11 @@ void Planner::init() {
 
 #define MINIMAL_STEP_RATE 120
 constexpr float step_pre_mm_arr[] = DEFAULT_AXIS_STEPS_PER_UNIT;
-constexpr float X_MINIMAL_STEP_RATE = step_pre_mm_arr[X_AXIS] * (DEFAULT_XJERK > LA_V1_DEFAULT_XJERK ? LA_V1_DEFAULT_XJERK : DEFAULT_XJERK);
-constexpr float Y_MINIMAL_STEP_RATE = step_pre_mm_arr[Y_AXIS] * (DEFAULT_YJERK > LA_V1_DEFAULT_YJERK ? LA_V1_DEFAULT_YJERK : DEFAULT_YJERK);
-constexpr float Z_MINIMAL_STEP_RATE = step_pre_mm_arr[Z_AXIS] * (DEFAULT_ZJERK > LA_V1_DEFAULT_ZJERK ? LA_V1_DEFAULT_ZJERK : DEFAULT_ZJERK);
-constexpr float E_MINIMAL_STEP_RATE = step_pre_mm_arr[E_AXIS] * (DEFAULT_EJERK > LA_V1_DEFAULT_EJERK ? LA_V1_DEFAULT_EJERK : DEFAULT_EJERK);
+constexpr float init_rate_arr[] = DEFAULT_INIT_RATE;
+constexpr float X_MINIMAL_STEP_RATE = step_pre_mm_arr[X_AXIS] * init_rate_arr[X_AXIS];
+constexpr float Y_MINIMAL_STEP_RATE = step_pre_mm_arr[Y_AXIS] * init_rate_arr[Y_AXIS];
+constexpr float Z_MINIMAL_STEP_RATE = step_pre_mm_arr[Z_AXIS] * init_rate_arr[Z_AXIS];
+constexpr float E_MINIMAL_STEP_RATE = step_pre_mm_arr[E_AXIS] * init_rate_arr[E_AXIS];
 /**
  * Get the current block for processing
  * and mark the block as busy.
@@ -822,14 +823,32 @@ block_t* Planner::get_current_block() {
  */
 void Planner::calculate_trapezoid_for_block(block_t * const block, const_float_t entry_factor, const_float_t exit_factor) {
 
+#define INIT_RATE_CAL(INIT_RATE, MIN_STEP_RATE) do{                           \
+              const uint32_t initial_freq = (block->acceleration / INIT_RATE);\
+              if (initial_freq > uint32_t(MIN_STEP_RATE)){                   \
+               NOLESS(initial_rate, uint32_t(initial_freq));                  \
+              } else {                                                        \
+               NOLESS(initial_rate, uint32_t(MIN_STEP_RATE));                 \
+              }                                                               \
+            }while(0)
+
   uint32_t initial_rate = CEIL(block->nominal_rate * entry_factor),
            final_rate = CEIL(block->nominal_rate * exit_factor); // (steps per second)
 
   // Limit minimal step rate (Otherwise the timer will overflow.)
-  if(false == block->use_advance_lead)
-    NOLESS(initial_rate, uint32_t(E_MINIMAL_STEP_RATE));
-  else
-    NOLESS(initial_rate, uint32_t(MINIMAL_STEP_RATE));
+  #if ENABLED(ANKER_STARTUP_SPEED_ERR)
+    if (false == block->use_advance_lead) { NOLESS(initial_rate, uint32_t(E_MINIMAL_STEP_RATE));}
+    else if (block->axis_maximum_count == E_AXIS){ INIT_RATE_CAL(init_rate_arr[E_AXIS], E_MINIMAL_STEP_RATE);}
+    else if (block->axis_maximum_count == X_AXIS){ INIT_RATE_CAL(init_rate_arr[X_AXIS], X_MINIMAL_STEP_RATE);}
+    else if (block->axis_maximum_count == Y_AXIS){ INIT_RATE_CAL(init_rate_arr[Y_AXIS], Y_MINIMAL_STEP_RATE);}
+    else if (block->axis_maximum_count == Z_AXIS){ INIT_RATE_CAL(init_rate_arr[Z_AXIS], Z_MINIMAL_STEP_RATE);}
+    else { NOLESS(initial_rate, uint32_t(MINIMAL_STEP_RATE));}
+  #else
+    if(false == block->use_advance_lead)
+      NOLESS(initial_rate, uint32_t(E_MINIMAL_STEP_RATE));
+    else
+      NOLESS(initial_rate, uint32_t(MINIMAL_STEP_RATE));
+  #endif
   NOLESS(final_rate, uint32_t(MINIMAL_STEP_RATE));
 
   #if EITHER(S_CURVE_ACCELERATION, LIN_ADVANCE)
@@ -2418,6 +2437,14 @@ bool Planner::_populate_block(block_t * const block, bool split_move,
     else
   #endif
       {if (block->step_event_count < MIN_STEPS_PER_SEGMENT) return false;}
+
+  #if ENABLED(ANKER_STARTUP_SPEED_ERR)
+    if (block->step_event_count == esteps){ block->axis_maximum_count = E_AXIS;}
+    else if (block->step_event_count == block->steps.a){ block->axis_maximum_count = X_AXIS;}
+    else if (block->step_event_count == block->steps.b){ block->axis_maximum_count = Y_AXIS;}
+    else if (block->step_event_count == block->steps.c){ block->axis_maximum_count = Z_AXIS;}
+    else { block->axis_maximum_count = NO_AXIS_ENUM;}
+  #endif
 
   TERN_(MIXING_EXTRUDER, mixer.populate_block(block->b_color));
 
