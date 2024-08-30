@@ -141,6 +141,7 @@ HAL_MOTION_TRACK_ISR() { // Consume time = 750ns
 }
 
 void Motion_Track::block_info_record(const void* ptr) { // 800NS
+    TP173_TOGGLE();
     //TP173_HIGH();
     if(PLR_TRACK == m_track.mode && m_track.count < PLR_LEN-1){// Trigger and close block information record by G0_1 W<active>
       const block_t* currentbBlock = (const block_t*)ptr; // To convert a `void*` pointer to a `const block_t*` pointer
@@ -316,7 +317,7 @@ void Motion_Track::init(void)
 void Motion_Track::msg_sending(void)
 {
   uint8_t Number_of_runs = 5; // Maximum number of sends per run
-  if(m_track.count && Number_of_runs){
+  while(m_track.count && Number_of_runs){
     TP172_HIGH();
     switch (m_track.mode)
     {
@@ -340,4 +341,6 @@ void Motion_Track::msg_sending(void)
   }
 }
 
+#else
+HAL_MOTION_TRACK_ISR() {}
 #endif

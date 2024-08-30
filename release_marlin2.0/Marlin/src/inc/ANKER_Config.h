@@ -46,7 +46,7 @@
 /*******************************Functional API Configuration****************************/
 #if MACCHINE == MOTOR_V8110_5X_DVT
 #ifndef SHORT_BUILD_VERSION
-#define SHORT_BUILD_VERSION "V8110_V3.0.18"
+#define SHORT_BUILD_VERSION "V8110_V3.0.21"
 #endif
 #define ANKER_ROTATION        1 //
 #define ANKER_LOG_DEBUG       0 // Used to print logs for debugging
@@ -81,6 +81,8 @@
 #define ANKER_RETRACTION_E_JERK   1 // retraction_e_jerk. Independent setting of starting speeds for E-axis retraction and feed-in
 #define ANKER_VIBRATION_CONTROL   1 // T/S curve switching and Zero configuration(Zeroconf)
 #define ANKER_CORNER_CALC         1 // Corner angle calculation
+#define ANKER_STARTUP_SPEED_ERR   0 // Excessive startup speed error
+#define ANKER_FILTER_LEVEL_GRID   0 //filter_leveling_grid
 #endif
 
 /*******************************Error detection****************************/
