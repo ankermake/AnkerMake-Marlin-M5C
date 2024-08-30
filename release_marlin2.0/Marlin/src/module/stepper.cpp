@@ -2710,7 +2710,7 @@ uint32_t Stepper::block_phase_isr() {
         }
       #endif
 
-      motion_track.block_info_record((const void*)current_block);
+      TERN_(ANKER_MOTION_TRACKING, motion_track.block_info_record((const void*)current_block));
     }
     #if ENABLED(LASER_POWER_INLINE_CONTINUOUS)
       else { // No new block found; so apply inline laser parameters

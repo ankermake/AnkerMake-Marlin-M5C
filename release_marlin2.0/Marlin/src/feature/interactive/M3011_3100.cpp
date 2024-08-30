@@ -144,6 +144,27 @@ void GcodeSuite::M3015(void)
     }
 }
 
+void GcodeSuite::M3016(void)
+{ // M3016 [P<Choose blower 0 or throat fan 1>] [S<Speed 0~255>]
+    #define HEAT_FAN 0
+    #define THROAT_FAN 1
+    uint8_t buff[2] = {0, 0}; // (type, speed)
+    const uint8_t pfan = parser.byteval('P', 0);
+    uint8_t speed = 0;
+    if (pfan > THROAT_FAN)
+        return;
+
+    if (parser.seenval('S')){
+        speed = parser.value_ushort();
+        if (speed > 255)
+            return;
+        buff[0] = pfan;
+        buff[1] = speed; // if(speed == 255)open auto fan // (speed == 0)close auto fan
+        uart_nozzle_tx_multi_data(GCP_CMD_4B_SET_FAN_SPEED, buff, 2);
+        MYSERIAL2.printLine("echo:M3016 P%d S%d\n", pfan, speed);
+    }
+}
+
 void GcodeSuite::M3020()
 {
     if (parser.seen('V'))

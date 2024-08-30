@@ -15,6 +15,8 @@
 #include "../../feature/interactive/uart_nozzle_tx.h"
 #include "../../feature/interactive/protocol.h"
 #include "../../feature/anker/anker_homing.h"
+#include "../../feature/bedlevel/bedlevel.h"
+#include "../../module/settings.h"
 
 void GcodeSuite::M3030()
 {// M3030 [C<log_type>] [T<point_type>] [P<point_number>]
@@ -127,6 +129,106 @@ void GcodeSuite::M3033()
     }
   }
 }
+
+#if ENABLED(ANKER_FILTER_LEVEL_GRID)
+  
+  #define BOUNDARIES_NOISE_POINT 0.35f // Noise Point Judgment
+  #define NOISE_POINT 0.3f // Noise Point Judgment
+
+  static float boundarie_noise_point = BOUNDARIES_NOISE_POINT;
+  static float noise_point = NOISE_POINT;
+  
+  void filter_leveling_grid(bed_mesh_t &din, const uint8_t outter_size, const uint8_t inner_size, bool debug_flag)
+  {
+
+      uint8_t i, j, m, n, k;
+      float dout[outter_size][inner_size];
+
+
+      if(outter_size <= 0 || inner_size <= 0) return;
+
+      if(debug_flag) SERIAL_ECHOLNPGM("filter leveling grid:");
+      
+      for(i = 0; i < outter_size; i++) // Row
+      {
+          for(j = 0; j < inner_size; j++) // Column
+          {
+              short A[4]; // Four boundaries of the data point
+              k = 0;
+              dout[i][j] = 0; // Initialize the output to 0
+              A[0] = i-1;
+              if (A[0] < 0){ A[0] = 0; } // Set to 0 if it exceeds the boundary
+              A[1] = i+1;
+              if (A[1] > outter_size-1){ A[1] = outter_size-1; } // Set to maximum if it exceeds the boundary
+              A[2] = j-1;
+              if (A[2] < 0){ A[2] = 0; } // Set to 0 if it exceeds the boundary
+              A[3] = j+1;
+              if (A[3] > inner_size-1){ A[3] = inner_size-1; } // Set to maximum if it exceeds the boundary
+
+              for(m = A[0]; m <= A[1]; m++){ // Retrieve within the row range
+                  for(n = A[2]; n <= A[3]; n++){ // Retrieve within the column range
+                      k++;
+                      dout[i][j] += din[m][n]; // Sum of all points within the specified boundary
+                  }
+              }
+
+              if(k > 1){
+                dout[i][j] -= din[i][j];
+                dout[i][j] /= (k-1); // In calculating the average, the weight of all points is the same
+              }
+
+              if(debug_flag) { SERIAL_ECHO_F(dout[i][j], int(3)); SERIAL_ECHO(" ,"); _delay_ms(5);}
+          }
+
+          if(debug_flag) { SERIAL_EOL();}
+      }
+
+      // Compare using dout and dint, smooth out the ones with large differences
+      if(debug_flag) SERIAL_ECHOLNPGM("nosie point grid:");
+      for(i = 0; i < outter_size; i++) // Row
+      {
+          for(j = 0; j < inner_size; j++) // Column
+          {
+              if((i== 0 || j == 0 || i== outter_size-1 || j == inner_size-1))
+              {   
+                if(ABS(dout[i][j] - din[i][j]) > boundarie_noise_point)
+                  din[i][j] = dout[i][j];
+              }else if(ABS(dout[i][j] - din[i][j]) > noise_point)
+              {
+                  din[i][j] = dout[i][j];
+              }
+          }
+      }
+      _delay_ms(20);
+  }
+
+void GcodeSuite::M3034()
+{// M3034 [S<filter_leveling_grid >]
+  
+  if (parser.seenval('S'))
+  {
+    const uint8_t save = parser.value_int();
+    print_bilinear_leveling_grid();
+    TERN_(ANKER_FILTER_LEVEL_GRID, filter_leveling_grid(z_values, GRID_MAX_POINTS_X, GRID_MAX_POINTS_Y, ENABLE));
+    SERIAL_ECHOLNPGM(">>>>>>>>>>>>>>> after filter level:");
+    print_bilinear_leveling_grid();
+    if(save) settings.save();
+  }
+
+  if (parser.seenval('B'))
+  {
+    float value = parser.value_float();
+    if(value > 0.02f) boundarie_noise_point = value;
+  }
+
+  if (parser.seenval('P'))
+  {
+    float value = parser.value_float();
+    if(value > 0.02f) noise_point = value;
+  }
+}
+
+#endif
 
 
 #endif

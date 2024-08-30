@@ -3288,3 +3288,21 @@ void set_axis_is_at_home(const AxisEnum axis) {
     update_workspace_offset(axis);
   }
 #endif
+
+
+uint32_t Stepper_enio_state(){
+    uint32_t state=0;
+    state = 500000;//X Y Z Z2 E五个轴
+    if(READ(X_ENABLE_PIN)) {state += 10000;}
+    if(READ(Y_ENABLE_PIN)) {state += 1000;}
+    if(READ(Z_ENABLE_PIN)) {state += 100;}
+    if(READ(Z2_ENABLE_PIN)){state += 10;}
+    if(READ(E0_ENABLE_PIN)){state += 1;} 
+
+    return state;
+}
+  
+void Report_step_enin_state(){
+     MYSERIAL2.printLine("M:%d", Stepper_enio_state());
+}
+

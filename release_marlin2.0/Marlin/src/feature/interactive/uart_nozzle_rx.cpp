@@ -344,6 +344,10 @@ extern "C"
             }
             break;
 
+          case GCP_CMD_4B_SET_FAN_SPEED:
+            MYSERIAL2.printLine("echo: set %s fan speed= %d\n", ((gcp_msg->content[0]==0) ? "heater" : "throat"), gcp_msg->content[1]);
+            break;
+
           default:
             break;
         }
@@ -351,7 +355,7 @@ extern "C"
 
     static void uart_nozzle_rx_disconnect_check(void)
     {
-        uint32_t t_now = getCurrentMillis();
+        const uint32_t t_now = getCurrentMillis();
         int32_t gap = t_now - uart_nozzle_rx.start_ms;
 
         if (fatal_err)
@@ -434,7 +438,7 @@ extern "C"
                     last_temp_now = uart_nozzle_info.temp_now;
                 MYSERIAL2.printLine("sys_err = 0x%x, rst_flg = 0x%x, adc_raw = %d, adc_ave = %d, ", uart_nozzle_info.sys_err, uart_nozzle_info.rst_flg, uart_nozzle_info.adc_raw, uart_nozzle_info.adc_ave);
                 MYSERIAL2.printLine("temp_now = %d, temp_tg = %d, pidout = %d, probe_thres = %d, ", uart_nozzle_info.temp_now, uart_nozzle_info.temp_tg, uart_nozzle_info.pidout, uart_nozzle_info.probe_thres);
-                MYSERIAL2.printLine("tx_cnt = %d, rx_cnt = %d, oci ttl cnt = %d\n", uart_nozzle_rx.tx_cnt, uart_nozzle_rx.rx_cnt, uart_nozzle_info.oci_ttl_cnt);
+                MYSERIAL2.printLine("tx_cnt = %d, rx_cnt = %d, oci ttl cnt = %d M:%d\n", uart_nozzle_rx.tx_cnt, uart_nozzle_rx.rx_cnt, uart_nozzle_info.oci_ttl_cnt, Stepper_enio_state());
             }
 
             sys_err_parse(uart_nozzle_info.sys_err);

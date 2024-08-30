@@ -1149,6 +1149,9 @@ void GcodeSuite::process_parsed_command(const bool no_ok/*=false*/) {
             case 3031: M3031(); break;
             case 3032: M3032(); break;
             case 3033: M3033(); break;
+            #if ENABLED(ANKER_FILTER_LEVEL_GRID)
+            case 3034: M3034(); break;
+            #endif
           #endif
           #if ENABLED(ANKER_BELT_CHECK)
             case 2100: M2100(); break;           
@@ -1162,6 +1165,7 @@ void GcodeSuite::process_parsed_command(const bool no_ok/*=false*/) {
             case 3013: M3013();break;
             case 3014: M3014();break;
             case 3015: M3015();break;
+            case 3016: M3016();break;
             case 3020: M3020();break;
           #endif
           #if ENABLED(ANKER_MAKE_API)
